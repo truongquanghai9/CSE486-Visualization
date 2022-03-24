@@ -1,0 +1,11 @@
+.board-container {
+    /*border-collapse: collapse;*/
+    /*overflow: scroll;*/
+}
+table {
+    /*border-spacing: 0;*/
+    table-layout: fixed;
+    border-collapse: collapse;
+    /*overflow: scroll;*/
+    width: 100%;
+}
