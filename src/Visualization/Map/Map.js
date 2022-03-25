@@ -41,8 +41,8 @@ const Map = () => {
                         tempGrid[list[u].x][list[u].y].isNode = true;
                         tempGrid[list[v].x][list[v].y].isNode = true;
                         let x0 = list[u].x, y0 = list[u].y, x1 = list[v].x, y1 = list[v].y;
-                        let dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-                        let dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+                        let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+                        let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
                         let err = dx + dy, e2;
 
                         while(true)
