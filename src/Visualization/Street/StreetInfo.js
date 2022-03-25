@@ -16,5 +16,6 @@ export interface Node {
     street: string,
     x: number,
     y: number,
-    change: number
+    change: number,
+    isNode: boolean
 }

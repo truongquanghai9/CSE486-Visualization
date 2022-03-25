@@ -3,22 +3,19 @@ import { csv } from "d3";
 import nodeList from "./Network/node_list.csv"
 import edgeList from "./Network/edge_list.csv"
 import {Node as StreetNode} from "../Street/StreetInfo"
-import {initGrid} from "./GridInit/GridInitialization";
+import {getBoard, initGrid} from "./GridInit/GridInitialization";
 import "./Map.css";
 import Node from "../Street/Node"
-import Queue from "@supercharge/queue-datastructure";
 
 const Map = () => {
-    const [nodes, setNodes] = useState({});
-    const [nodeSet, setNodeSet] = useState({});
     const [grid, setGrid] = useState([]);
-    const [adjMap, setAdjMap] = useState({});
-    
-    useEffect(async () => {
+    const [dataLoaded, setDataLoaded] = useState(false);
+    // (0, 2), (3, 5)
+    useEffect(() => {
         let list = {};
         let tempSet = {};
         let tempGrid = [];
-        await csv(nodeList).then(data => {
+        csv(nodeList).then(data => {
             data.forEach(d => {
                 let xy = latlngToGlobalXY(parseFloat(d.y), parseFloat(d.x));
                 let id = parseInt(d.id);
@@ -29,115 +26,52 @@ const Map = () => {
                 }
                 tempSet[newNode.x][newNode.y] = id;
             });
-            setNodes({...list});
-            setNodeSet({...tempSet});
             tempGrid = initGrid(0, 0);
-        });
-        let tempMap = {};
-        await csv(edgeList).then(data => {
-            data.forEach(d => {
-                if (tempMap[d.u] === undefined || tempMap[d.u] === null) {
-                    tempMap[d.u] = [];
-                }
-                tempMap[parseInt(d.u)].push({v: parseInt(d.v), street: d.name});
-            });
-            setAdjMap(tempMap);
-            const visited = new Set();
-            let tempList = {...list};
-            for (let u in tempMap) {
-                if (visited.has(u)) continue;
-                for (const node of tempMap[u]) {
-                    let v = node.v, street = node.street;
-                    visited.add(u + ',' + v);
-                    if (!visited.has(v + ',' + u)) {
-                        let diffX = list[u].x - list[v].x;
-                        let diffY = list[u].y - list[v].y;
-                        if (tempGrid[list[v].x][list[v].y].change != 0 && tempGrid[list[u].x][list[u].y].change != 0) {
-                            if (tempGrid[list[u].x][list[u].y].change == 1) {
-                                
-                            } else if (tempGrid[list[v].x][list[v].y].change == 1) {
+            let tempMap = {};
+            csv(edgeList).then(data => {
+                data.forEach(d => {
+                    if (tempMap[d.u] === undefined || tempMap[d.u] === null) {
+                        tempMap[d.u] = [];
+                    }
+                    tempMap[parseInt(d.u)].push({v: parseInt(d.v), street: d.name});
+                });
+                for (let u in tempMap) {
+                    for (const node of tempMap[u]) {
+                        let v = node.v, street = node.street;
+                        tempGrid[list[u].x][list[u].y].isNode = true;
+                        tempGrid[list[v].x][list[v].y].isNode = true;
+                        let x0 = list[u].x, y0 = list[u].y, x1 = list[v].x, y1 = list[v].y;
+                        let dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+                        let dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+                        let err = dx + dy, e2;
 
-                            } else if (tempGrid[list[u].x][list[v].x].change == 2) {
+                        while(true)
+                        {
+                            if (x0 == x1 && y0 == y1) break;
 
-                            } else if (tempGrid[list[v].x][list[u].x].change == 2) {
+                            e2 = 2 * err;
 
+                            // EITHER horizontal OR vertical step (but not both!)
+                            if (e2 > dy)
+                            {
+                                err += dy;
+                                x0 += sx;
                             }
+                            else if (e2 < dx)
+                            { // <--- this "else" makes the difference
+                                err += dx;
+                                y0 += sy;
+                            }
+                            tempGrid[x0][y0].street = list[u].street;
                         }
-                        if ((diffX >= 0 && diffY >= 0) || (diffX <= 0 && diffY >= 0)) {
-                            // right || left
-                            if (tempGrid[list[v].x][list[v].y].change != 0) {
-                                list[u].y = list[v].y;
-                            } else {
-                                list[v].y = list[u].y;
-                            }
-                            for (let i = Math.min(list[u].x, list[v].x); i <= Math.max(list[u].x, list[v].x); i++) {
-                                tempGrid[i][list[v].y].street = street;
-                                tempGrid[i][list[v].y].isChanged = true;
-                            }
-                        } else if ((diffX >= 0 && diffY <= 0) || (diffX <= 0 && diffY <= 0)) {
-                            // down or up
-                            if (tempGrid[list[v].x][list[u].y].change != 0) {
-                                list[u].x = list[v].x;
-                            } else {
-                                list[v].x = list[u].x;
-                            }
-                            for (let i = Math.min(list[u].y, list[v].y); i <= Math.max(list[u].y, list[v].y); i++) {
-                                tempGrid[list[v].x][i].street = street;
-                                tempGrid[list[v].x][i].isChanged = true;
-                            }
-                        }
-                        // tempGrid[list[u].x][list[u].y].isChanged = true;
-                        // tempGrid[list[v].x][list[v].y].isChanged = true;
                     }
                 }
-            }
-            setNodes(list);
-            setGrid(tempGrid);
+                setGrid(() => tempGrid);
+                setDataLoaded(true);
+            });
         });
     }, []);
-    
-    // const dfs = (list, tempList, tempMap, tempGrid, visited, u) => {
-    //     if (visited.has(u) || tempMap[u] === undefined || tempMap[u] === null) return;
-    //     visited.add(u);
-    //     for (const node of tempMap[u]) {
-    //         let v = node.v, street = node.street;
-    //         visited.add(u + ',' + v);
-    //         if (!visited.has(v + ',' + u)) {
-    //             let diffX = tempList[u].x - tempList[v].x;
-    //             let diffY = tempList[u].y - tempList[v].y;
-    //             if (tempGrid[list[v].x][list[v].y].isChanged && tempGrid[list[u].x][list[u].y].isChanged) {
-    //                 console.log("yes");
-    //             }
-    //             if ((diffX >= 0 && diffY >= 0) || (diffX <= 0 && diffY >= 0)) {
-    //                 // right || left
-    //                 if (tempGrid[list[v].x][list[v].y].isChanged) {
-    //                     list[u].y = list[v].y;
-    //                 } else {
-    //                     list[v].y = list[u].y;
-    //                 }
-    //                 for (let i = Math.min(list[u].x, list[v].x); i <= Math.max(list[u].x, list[v].x); i++) {
-    //                     tempGrid[i][list[v].y].street = street;
-    //                     tempGrid[i][list[v].y].isChanged = true;
-    //                 }
-    //             } else if ((diffX >= 0 && diffY <= 0) || (diffX <= 0 && diffY <= 0)) {
-    //                 // down or up
-    //                 if (tempGrid[list[v].x][list[u].y].isChanged) {
-    //                     list[u].x = list[v].x;
-    //                 } else {
-    //                     list[v].x = list[u].x;
-    //                 }
-    //                 for (let i = Math.min(list[u].y, list[v].y); i <= Math.max(list[u].y, list[v].y); i++) {
-    //                     tempGrid[list[v].x][i].street = street;
-    //                     tempGrid[list[v].x][i].isChanged = true;
-    //                 }
-    //             }
-    //             // tempGrid[list[u].x][list[u].y].isChanged = true;
-    //             // tempGrid[list[v].x][list[v].y].isChanged = true;
-    //             dfs(list, tempList, tempMap, tempGrid, visited, v);
-    //         }
-    //     }
-    // }
-    
+
     const radius = 6371;
     const latlngToGlobalXY = (lat, lng) => {
         //Calculates x based on cos of average of the latitudes
@@ -146,6 +80,19 @@ const Map = () => {
         let y = radius*lat;
         return {x: x, y: y}
     }
+    const cellRenderer = ({ columnIndex, key, rowIndex, style }) => {
+        return (
+            <Node
+                key={key}
+                row={rowIndex}
+                col={columnIndex}
+                isStart={false} isGoal={false}
+                street={grid[rowIndex][columnIndex]?.street}
+                isWall={grid[rowIndex][columnIndex]?.street === ''}
+                style={style}
+            />
+        );
+    };
     return (
         <div className="board-container">
             <table>
@@ -163,6 +110,7 @@ const Map = () => {
                                         isGoal={false}
                                         street={col.street}
                                         isWall={col.street === ''}
+                                        isNode={col.isNode}
                                     />
                                 );
                             })}
