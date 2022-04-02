@@ -6,10 +6,13 @@ import {Node as StreetNode} from "../Street/StreetInfo"
 import {getBoard, initGrid} from "./GridInit/GridInitialization";
 import "./Map.css";
 import Node from "../Street/Node"
+import model1 from './Network/vol_predictions.json';
 
 const Map = () => {
     const [grid, setGrid] = useState([]);
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [hourlyTraffic1, setHourlyTraffic1] = useState([]);
+    // hour state
     // (0, 2), (3, 5)
     useEffect(() => {
         let list = {};
@@ -37,9 +40,11 @@ const Map = () => {
                 });
                 for (let u in tempMap) {
                     for (const node of tempMap[u]) {
-                        let v = node.v, street = node.street;
-                        tempGrid[list[u].x][list[u].y].isNode = true;
-                        tempGrid[list[v].x][list[v].y].isNode = true;
+                        let v = node.v, street = u + '-' + node.v;
+                        // tempGrid[list[u].x][list[u].y].isNode = true;
+                        // tempGrid[list[v].x][list[v].y].isNode = true;
+                        tempGrid[list[u].x][list[u].y].street = street;
+                        tempGrid[list[v].x][list[v].y].street = street;
                         let x0 = list[u].x, y0 = list[u].y, x1 = list[v].x, y1 = list[v].y;
                         let dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
                         let dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -62,7 +67,7 @@ const Map = () => {
                                 err += dx;
                                 y0 += sy;
                             }
-                            tempGrid[x0][y0].street = list[u].street;
+                            tempGrid[x0][y0].street = street;
                         }
                     }
                 }
@@ -70,7 +75,41 @@ const Map = () => {
                 setDataLoaded(true);
             });
         });
+        const tempHourlyTraffic = new Array(24);
+        for (let i = 0; i < 24; i++) {
+            tempHourlyTraffic[i] = {};
+        }
+        for (const edge in model1) {
+            if (edge) {
+                for (let i = 0; i < 24; i++) {
+                    tempHourlyTraffic[i][edge] = model1[edge].volume[i];
+                }
+            }
+        }
+        setHourlyTraffic1(tempHourlyTraffic);
     }, []);
+
+    useEffect(() => {
+        if (hourlyTraffic1.length != 0) {
+            setColorWithHour(15);
+        }
+    }, [hourlyTraffic1]);
+
+    const setColorWithHour = (hour: number) => {
+        for (const edge in hourlyTraffic1[hour]) {
+            if (edge) {
+                const allEdge: HTMLElement[] = document.getElementsByClassName(edge.toString());
+                for(let i=0 ; i<allEdge.length; i++){
+                    const vol = hourlyTraffic1[hour][edge];
+                    allEdge[i].style.backgroundColor = `rgba(${convertToTGBA(vol[0])}, ${convertToTGBA(vol[1])}, ${convertToTGBA(vol[2])}, ${vol[3]})`;
+                }
+            }
+        }
+    }
+
+    const convertToTGBA = (str) => {
+        return parseFloat(str) * 255;
+    }
 
     const radius = 6371;
     const latlngToGlobalXY = (lat, lng) => {
