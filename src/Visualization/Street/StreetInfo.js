@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react';
 
 // export interface Node {
 //     x: number,
@@ -13,9 +13,9 @@ import React from "react"
 //     adj: Street[]
 // }
 export interface Node {
-    street: string,
-    x: number,
-    y: number,
-    change: number,
-    isNode: boolean
+  street: string;
+  x: number;
+  y: number;
+  change: number;
+  isNode: boolean;
 }

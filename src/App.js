@@ -3,9 +3,9 @@ import './App.css';
 import Map from './Visualization/Map/Map.js';
 function App() {
   return (
-      <div>
-        <Map></Map>
-      </div>
+    <div>
+      <Map></Map>
+    </div>
   );
 }
 
