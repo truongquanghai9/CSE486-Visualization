@@ -89,11 +89,11 @@ const Map = () => {
         setHourlyTraffic1(tempHourlyTraffic);
     }, []);
 
-    useEffect(() => {
-        if (hourlyTraffic1.length != 0) {
-            setColorWithHour(15);
-        }
-    }, [hourlyTraffic1]);
+    // useEffect(() => {
+    //     if (hourlyTraffic1.length != 0) {
+    //         setColorWithHour(15);
+    //     }
+    // }, [hourlyTraffic1]);
 
     const setColorWithHour = (hour: number) => {
         for (const edge in hourlyTraffic1[hour]) {
@@ -101,13 +101,19 @@ const Map = () => {
                 const allEdge: HTMLElement[] = document.getElementsByClassName(edge.toString());
                 for(let i=0 ; i<allEdge.length; i++){
                     const vol = hourlyTraffic1[hour][edge];
-                    allEdge[i].style.backgroundColor = `rgba(${convertToTGBA(vol[0])}, ${convertToTGBA(vol[1])}, ${convertToTGBA(vol[2])}, ${vol[3]})`;
+                    allEdge[i].style.backgroundColor = `rgba(${convertToRGBA(vol[0])}, ${convertToRGBA(vol[1])}, ${convertToRGBA(vol[2])}, ${vol[3]})`;
                 }
             }
         }
     }
 
-    const convertToTGBA = (str) => {
+    const getColor = (edge: string, hour: number) => {
+        if (edge === null || edge === undefined || edge === '') return `rgba(0, 0, 0, 1)`;
+        const colors = model1[edge]['volume'][hour];
+        return `rgba(${convertToRGBA(colors[0])}, ${convertToRGBA(colors[1])}, ${convertToRGBA(colors[2])}, ${colors[3]})`;
+    }
+
+    const convertToRGBA = (str) => {
         return parseFloat(str) * 255;
     }
 
@@ -119,19 +125,6 @@ const Map = () => {
         let y = radius*lat;
         return {x: x, y: y}
     }
-    const cellRenderer = ({ columnIndex, key, rowIndex, style }) => {
-        return (
-            <Node
-                key={key}
-                row={rowIndex}
-                col={columnIndex}
-                isStart={false} isGoal={false}
-                street={grid[rowIndex][columnIndex]?.street}
-                isWall={grid[rowIndex][columnIndex]?.street === ''}
-                style={style}
-            />
-        );
-    };
     return (
         <div className="board-container">
             <table>
@@ -150,6 +143,7 @@ const Map = () => {
                                         street={col.street}
                                         isWall={col.street === ''}
                                         isNode={col.isNode}
+                                        color={getColor(col.street, 0)}
                                     />
                                 );
                             })}
