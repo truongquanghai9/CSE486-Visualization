@@ -30,8 +30,8 @@ function CanvasMap() {
         let xy = latlngToGlobalXY(parseFloat(d.y), parseFloat(d.x));
         let id = parseInt(d.id);
         let newNode = {
-          x: Math.ceil(470480 - xy.x),
-          y: Math.ceil(260480 - xy.y),
+          x: Math.ceil(470480 * 3 - xy.x),
+          y: Math.ceil(260480 * 3 - xy.y),
         };
         list[id] = newNode;
         if (tempSet[newNode.x] === undefined || tempSet[newNode.x] === null) {
@@ -84,13 +84,13 @@ function CanvasMap() {
           }
         }
 
-        for (let i = 0; i < 24; i++) {
-          let cur_img = createMapImage(tempGrid, i);
+        // for (let i = 0; i < 24; i++) {
+          let cur_img = createMapImage(tempGrid, 0);
           // var new_image = document.createElement('img');
           // new_image = cur_img;
           document.body.appendChild(cur_img);
           // mapImageArray.push();
-        }
+        // }
 
         setGrid(() => tempGrid);
         setDataLoaded(true);
@@ -165,8 +165,8 @@ function CanvasMap() {
   function imagedata_to_image(imagedata) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    canvas.width = imagedata.width;
-    canvas.height = imagedata.height;
+    canvas.width = getBoard().row;
+    canvas.height = getBoard().col;
     ctx.putImageData(imagedata, 0, 0);
     var image = new Image();
     image.src = canvas.toDataURL();
@@ -196,7 +196,7 @@ function CanvasMap() {
     let x = radius * lng * Math.cos(40.77235563526895);
     // Calculates y based on latitude
     let y = radius * lat;
-    return { x: x, y: y };
+    return { x: x * 3, y: y * 3};
   };
 
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import { Node } from '../../Street/StreetInfo';
 
 export const getBoard = () => {
-  return { row: 700, col: 1180 };
+  return { row: 700 * 3, col: 1180 * 3};
 };
 
 export const initGrid = (startNode, goalNode) => {
