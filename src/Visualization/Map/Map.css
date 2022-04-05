@@ -1,3 +1,6 @@
+body {
+    background-color: black;
+}
 .board-container {
     /*border-collapse: collapse;*/
     /*overflow: scroll;*/
@@ -8,4 +11,13 @@ table {
     border-collapse: collapse;
     /*overflow: scroll;*/
     width: 100%;
+}
+button {
+    width: 60px;
+    height: 30px;
+    margin-right: 5px;
+}
+#zoom-in-out {
+    position: fixed;
+    right: 0;
 }
