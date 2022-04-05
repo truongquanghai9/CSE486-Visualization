@@ -19,6 +19,7 @@ function CanvasMap() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [hourlyTraffic1, setHourlyTraffic1] = useState([]);
   const [gridImage1, setGridImage1] = useState([]);
+  var mapImageArray = [];
 
   useEffect(() => {
     let list = {};
@@ -83,107 +84,61 @@ function CanvasMap() {
           }
         }
 
-        // createSampleCanvas();
-        // generateJPG(tempGrid);
-        createMapCanvas(tempGrid);
+        for (let i = 0; i < 24; i++) {
+          let cur_img = createMapImage(tempGrid, i);
+          // var new_image = document.createElement('img');
+          // new_image = cur_img;
+          document.body.appendChild(cur_img);
+          // mapImageArray.push();
+        }
 
         setGrid(() => tempGrid);
         setDataLoaded(true);
       });
     });
 
-    const tempHourlyTraffic = new Array(24);
-    for (let i = 0; i < 24; i++) {
-      tempHourlyTraffic[i] = {};
-    }
+    // const tempHourlyTraffic = new Array(24);
+    // for (let i = 0; i < 24; i++) {
+    //   tempHourlyTraffic[i] = {};
+    // }
 
-    for (const edge in model1) {
-      if (edge) {
-        for (let i = 0; i < 1; i++) {
-          tempHourlyTraffic[i][edge] = model1[edge].volume[i];
-        }
-      }
-    }
-    setHourlyTraffic1(tempHourlyTraffic);
+    // for (const edge in model1) {
+    //   if (edge) {
+    //     for (let i = 0; i < 1; i++) {
+    //       tempHourlyTraffic[i][edge] = model1[edge].volume[i];
+    //     }
+    //   }
+    // }
+    // setHourlyTraffic1(tempHourlyTraffic);
   }, []);
 
   const convertToRGBA = (str) => {
     return parseFloat(str) * 255;
   };
 
-  // function volumeToColorString(colors) {
-  //   return `rgba(${convertToRGBA(colors[0])},
-  //       ${convertToRGBA(colors[1])},
-  //       ${convertToRGBA(colors[2])},
-  //       ${colors[3]})`;
-  // }
-
-  // const getColor = (edge: string, hour: number) => {
-  //   if (edge === null || edge === undefined || edge === '')
-  //     return `rgba(0, 0, 0, 1)`;
-  //   const colors = model1[edge]['volume'][hour];
-  //   return volumeToColorString(colors);
-  // };
-
-  // function generateJPG(map) {
-  //   let height = map[0].length;
-  //   let width = map.length;
-
-  //   const canvas = document.getElementById('canvas2');
-  //   const ctx = canvas.getContext('2d');
-  //   // const image = ctx.createImageData(width, height);
-  //   const image = ctx.createImageData(100, 100);
-
-  //   let offset = 0;
-  //   let printed = 0;
-
-  //   for (let y = height - 1; y > 0; y--) {
-  //     for (let x = 0; x < width; x++) {
-  //       let v = map[x][y];
-  //       v = nodeToPixel(v);
-
-  //       if (sum(v) > 200 && printed < 100) {
-  //         // console.log(v, offset);
-  //         printed += 1;
-  //       }
-  //       if (offset < 100) {
-  //         // console.log(v, offset);
-  //       }
-
-  //       image.data[offset] = v[0];
-  //       image.data[offset + 1] = v[2];
-  //       image.data[offset + 2] = v[3];
-  //       image.data[offset + 3] = v[4];
-  //       offset += 4;
-  //     }
-  //   }
-  //   console.log('Finished');
-  //   ctx.putImageData(image, 20, 20);
-  // }
-
-  function createMapCanvas(map) {
+  function createMapImage(map, hour) {
     let height = map[0].length;
     let width = map.length;
 
     // console.log(height, width);
 
-    const canvas3 = document.getElementById('canvas3');
+    const canvas = document.createElement('canvas');
 
-    const ctx = canvas3.getContext('2d');
+    const ctx = canvas.getContext('2d');
     const image = ctx.createImageData(width, height);
 
-    // let printed = 0;
+    let printed = 0;
     // Iterate through every pixel
     for (let i = 0; i < image.data.length; i += 4) {
       let x = (i / 4) % width;
       let y = height - 1 - parseInt(i / (width * 4));
       let v = map[x][y];
-      v = nodeToPixel(v);
+      v = nodeToPixel(v, hour);
 
-      // if (printed < 10 && sum(v) > 400) {
-      //   console.log(x, y, v, map[x]);
-      //   printed++;
-      // }
+      if (printed < 10 && sum(v) > 400) {
+        console.log(x, y, v, hour);
+        printed++;
+      }
 
       // Modify pixel data
       image.data[i + 0] = v[0]; // R value
@@ -193,32 +148,30 @@ function CanvasMap() {
     }
 
     // Draw image data to the canvas
-    ctx.putImageData(image, 0, 0);
-    document.body.style.background = 'url(' + canvas3.toDataURL() + ')';
+    // ctx.putImageData(image, 0, 0);
+
+    var jpgImage = imagedata_to_image(image);
+
+    return jpgImage;
+    // document.body.style.background = 'url(' + canvas.toDataURL() + ')';
+    // const img = document.createElement('img');
+    // img.src = 'url(' + jpgImage.toDataURL() + ')';
+    // img.id = 'img-' + hour;
+    // document.body.appendChild(img);
+
+    // document.body.style.background = 'url(' + jpgImage.toDataURL() + ')';
   }
 
-  // function createSampleCanvas() {
-  //   const canvas = document.getElementById('canvas1');
-  //   const ctx = canvas.getContext('2d');
-  //   const imageData = ctx.createImageData(100, 100);
-
-  //   // Iterate through every pixel
-  //   for (let i = 0; i < imageData.data.length; i += 4) {
-  //     // Percentage in the x direction, times 255
-  //     let x = ((i % 400) / 400) * 255;
-  //     // Percentage in the y direction, times 255
-  //     let y = (Math.ceil(i / 400) / 100) * 255;
-
-  //     // Modify pixel data
-  //     imageData.data[i + 0] = x; // R value
-  //     imageData.data[i + 1] = y; // G value
-  //     imageData.data[i + 2] = 255 - x; // B value
-  //     imageData.data[i + 3] = 255; // A value
-  //   }
-
-  //   // Draw image data to the canvas
-  //   ctx.putImageData(imageData, 20, 20);
-  // }
+  function imagedata_to_image(imagedata) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = imagedata.width;
+    canvas.height = imagedata.height;
+    ctx.putImageData(imagedata, 0, 0);
+    var image = new Image();
+    image.src = canvas.toDataURL();
+    return image;
+  }
 
   function getColorArray(model, street, hour) {
     let arr = model[street]['volume'][hour];
@@ -230,11 +183,11 @@ function CanvasMap() {
     ];
   }
 
-  function nodeToPixel(node, hour = 1) {
+  function nodeToPixel(node, hour) {
     if (node.street.length === 0) {
       return [0, 0, 0, 255];
     }
-    return getColorArray(model1, node.street, 1);
+    return getColorArray(model1, node.street, hour);
   }
 
   const latlngToGlobalXY = (lat, lng) => {
@@ -245,12 +198,12 @@ function CanvasMap() {
     let y = radius * lat;
     return { x: x, y: y };
   };
-  // <div>
-  //   <h1>Hello Worldly</h1>
-  //   <canvas id="canvas1"></canvas>
-  //   <canvas id="canvas2"></canvas>
-  // </div>
 
-  return <canvas id="canvas3" width="700" height="1180"></canvas>;
+  return (
+    <div>
+      {/* <canvas id="canvas" width="700" height="1180"></canvas> */}
+      <img id="1"></img>
+    </div>
+  );
 }
 export default CanvasMap;
