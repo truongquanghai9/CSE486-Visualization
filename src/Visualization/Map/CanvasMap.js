@@ -131,7 +131,7 @@ function CanvasMap() {
     const ctx = canvas.getContext('2d');
     canvas.imageSmoothEnabled = false;
     ctx.imageSmoothEnabled = false;
-    ctx.scale(5, 5);
+    ctx.scale(4, 4);
     const image = ctx.createImageData(width, height);
 
     let printed = 0;
