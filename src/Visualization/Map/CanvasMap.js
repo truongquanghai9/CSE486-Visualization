@@ -12,6 +12,7 @@ import { getBoard, initGrid } from './GridInit/GridInitialization';
 import './Map.css';
 import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
+import './bitmap';
 // import Canvas from './Canvas';
 
 function CanvasMap() {
@@ -151,6 +152,16 @@ function CanvasMap() {
       image.data[i + 1] = v[1]; // G value
       image.data[i + 2] = v[2]; // B value
       image.data[i + 3] = 255; // A value
+    }
+
+    function createMapPNG(map, hour) {
+      createImageBitmap();
+    }
+
+    function createMapPNG(image) {
+      const bitmap = createImageBitmap(image);
+      
+
     }
 
     // Draw image data to the canvas
