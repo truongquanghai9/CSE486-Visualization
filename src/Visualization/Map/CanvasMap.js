@@ -12,7 +12,6 @@ import { getBoard, initGrid } from './GridInit/GridInitialization';
 import './Map.css';
 import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
-import './bitmap';
 // import Canvas from './Canvas';
 
 function CanvasMap() {
@@ -91,14 +90,6 @@ function CanvasMap() {
           // new_image = cur_img;
           document.body.appendChild(cur_img);
           // mapImageArray.push();
-        // createMapImage(tempGrid, 0);
-
-        // for (let i = 0; i < 24; i++) {
-        //   let cur_img = createMapImage(tempGrid, i);
-        //   var new_image = document.createElement('img');
-        //   new_image = cur_img;
-        //   // document.body.appendChild(cur_img);
-        //   mapImageArray.push();
         // }
 
         setGrid(() => tempGrid);
@@ -131,13 +122,9 @@ function CanvasMap() {
 
     // console.log(height, width);
 
-    const canvas = document.getElementById('real_canvas');
-    canvas.width = visualViewport.width * 2;
-    canvas.height = canvas.width * (height / width);
+    const canvas = document.createElement('canvas');
+
     const ctx = canvas.getContext('2d');
-    canvas.imageSmoothEnabled = false;
-    ctx.imageSmoothEnabled = false;
-    ctx.scale(4, 4);
     const image = ctx.createImageData(width, height);
 
     let printed = 0;
@@ -160,23 +147,10 @@ function CanvasMap() {
       image.data[i + 3] = 255; // A value
     }
 
-    function createMapPNG(map, hour) {
-      createImageBitmap();
-    }
-
-    function createMapPNG(image) {
-      const bitmap = createImageBitmap(image);
-      
-
-    }
-
     // Draw image data to the canvas
-    // ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
     // ctx.putImageData(image, 0, 0);
 
     var jpgImage = imagedata_to_image(image);
-    ctx.drawImage(jpgImage, 0, 0);
 
     return jpgImage;
     // document.body.style.background = 'url(' + canvas.toDataURL() + ')';
@@ -227,7 +201,8 @@ function CanvasMap() {
 
   return (
     <div>
-      <canvas id="real_canvas"></canvas>
+      {/* <canvas id="canvas" width="700" height="1180"></canvas> */}
+      <img id="1"></img>
     </div>
   );
 }
