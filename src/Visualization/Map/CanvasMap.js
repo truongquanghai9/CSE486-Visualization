@@ -8,7 +8,7 @@ import { csv, sum } from 'd3';
 import nodeList from './Network/node_list.csv';
 import edgeList from './Network/edge_list.csv';
 import { Node as StreetNode } from '../Street/StreetInfo';
-import { getBoard, initGrid } from './GridInit/GridInitialization';
+import {getBoard, initGrid, multFactor} from './GridInit/GridInitialization';
 import './Map.css';
 import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
@@ -30,8 +30,8 @@ function CanvasMap() {
         let xy = latlngToGlobalXY(parseFloat(d.y), parseFloat(d.x));
         let id = parseInt(d.id);
         let newNode = {
-          x: Math.ceil(470480 * 3 - xy.x),
-          y: Math.ceil(260480 * 3 - xy.y),
+          x: Math.ceil(470480 * multFactor[0] - xy.x),
+          y: Math.ceil(260480 * multFactor[1] - xy.y),
         };
         list[id] = newNode;
         if (tempSet[newNode.x] === undefined || tempSet[newNode.x] === null) {
@@ -96,20 +96,6 @@ function CanvasMap() {
         setDataLoaded(true);
       });
     });
-
-    // const tempHourlyTraffic = new Array(24);
-    // for (let i = 0; i < 24; i++) {
-    //   tempHourlyTraffic[i] = {};
-    // }
-
-    // for (const edge in model1) {
-    //   if (edge) {
-    //     for (let i = 0; i < 1; i++) {
-    //       tempHourlyTraffic[i][edge] = model1[edge].volume[i];
-    //     }
-    //   }
-    // }
-    // setHourlyTraffic1(tempHourlyTraffic);
   }, []);
 
   const convertToRGBA = (str) => {
@@ -170,6 +156,11 @@ function CanvasMap() {
     ctx.putImageData(imagedata, 0, 0);
     var image = new Image();
     image.src = canvas.toDataURL();
+    image.id = "image";
+    image.style.zIndex = 1;
+    image.style.display = 'block';
+    image.style.marginLeft = 'auto';
+    image.style.marginRight = 'auto';
     return image;
   }
 
@@ -196,11 +187,35 @@ function CanvasMap() {
     let x = radius * lng * Math.cos(40.77235563526895);
     // Calculates y based on latitude
     let y = radius * lat;
-    return { x: x * 3, y: y * 3};
+    return { x: x * multFactor[0], y: y * multFactor[1]};
   };
+
+  const zoomIn = () => {
+    var myImg = document.getElementById("image");
+    var currWidth = myImg.clientWidth;
+    console.log(currWidth);
+    if (currWidth >= 2800) return false;
+    else {
+      myImg.style.width = (currWidth + 200) + "px";
+    }
+  }
+
+  const zoomOut = () => {
+    var myImg = document.getElementById("image");
+    var currWidth = myImg.clientWidth;
+    console.log(currWidth);
+    if (currWidth <= 400) return false;
+    else {
+      myImg.style.width = (currWidth - 200) + "px";
+    }
+  }
 
   return (
     <div>
+      <div id='zoom-in-out'>
+      <button onClick={zoomOut}>-</button>
+      <button onClick={zoomIn}>+</button>
+      </div>
       {/* <canvas id="canvas" width="700" height="1180"></canvas> */}
       <img id="1"></img>
     </div>
