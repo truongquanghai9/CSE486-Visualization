@@ -12,6 +12,7 @@ import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
 import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
+import Clock from '../Clock/Clock'
 // import Canvas from './Canvas';
 
 function CanvasMap() {
@@ -86,7 +87,7 @@ function CanvasMap() {
           }
         }
 
-        document.body.appendChild(createMapImage(tempGrid, 0));
+        createMapImage(tempGrid, 0).then(res => document.body.appendChild(res));
 
         // for (let i = 0; i < 24; i++) {
         //   let cur_img = createMapImage(tempGrid, i);
@@ -104,54 +105,58 @@ function CanvasMap() {
   };
 
   function createMapImage(map, hour) {
-    let height = map[0].length;
-    let width = map.length;
+    return new Promise(function(resolve, reject) {
+      let height = map[0].length;
+      let width = map.length;
 
-    // console.log(height, width);
+      // console.log(height, width);
+      // const img = document.getElementById('image');
+      // if (img) img.remove();
+      const canvas = document.createElement('canvas');
 
-    const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const image = ctx.createImageData(width, height);
 
-    const ctx = canvas.getContext('2d');
-    const image = ctx.createImageData(width, height);
+      // let printed = 0;
+      // Iterate through every pixel
+      for (let i = 0; i < image.data.length; i += 4) {
+        let x = (i / 4) % width;
+        let y = height - 1 - parseInt(i / (width * 4));
+        let v = map[x][y];
+        v = nodeToPixel(v, hour);
 
-    // let printed = 0;
-    // Iterate through every pixel
-    for (let i = 0; i < image.data.length; i += 4) {
-      let x = (i / 4) % width;
-      let y = height - 1 - parseInt(i / (width * 4));
-      let v = map[x][y];
-      v = nodeToPixel(v, hour);
+        // if (printed < 10 && sum(v) > 400) {
+        //   console.log(x, y, v, hour);
+        //   printed++;
+        // }
 
-      // if (printed < 10 && sum(v) > 400) {
-      //   console.log(x, y, v, hour);
-      //   printed++;
-      // }
+        // Modify pixel data
+        image.data[i + 0] = v[0]; // R value
+        image.data[i + 1] = v[1]; // G value
+        image.data[i + 2] = v[2]; // B value
+        image.data[i + 3] = 255; // A value
+      }
 
-      // Modify pixel data
-      image.data[i + 0] = v[0]; // R value
-      image.data[i + 1] = v[1]; // G value
-      image.data[i + 2] = v[2]; // B value
-      image.data[i + 3] = 255; // A value
-    }
-
-    var jpgImage = imagedata_to_image(image);
-    return jpgImage;
+      imagedata_to_image(image).then(res => resolve(res));
+    });
   }
 
   function imagedata_to_image(imagedata) {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-    canvas.width = getBoard().row;
-    canvas.height = getBoard().col;
-    ctx.putImageData(imagedata, 0, 0);
-    var image = new Image();
-    image.src = canvas.toDataURL();
-    image.id = 'image';
-    image.style.zIndex = 1;
-    image.style.display = 'block';
-    image.style.marginLeft = 'auto';
-    image.style.marginRight = 'auto';
-    return image;
+    return new Promise(function(resolve, reject) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      canvas.width = getBoard().row;
+      canvas.height = getBoard().col;
+      ctx.putImageData(imagedata, 0, 0);
+      var image = new Image();
+      image.src = canvas.toDataURL();
+      image.id = 'image';
+      image.style.zIndex = 1;
+      image.style.display = 'block';
+      image.style.marginLeft = 'auto';
+      image.style.marginRight = 'auto';
+      resolve (image);
+    });
   }
 
   function getColorArray(model, street, hour) {
@@ -206,6 +211,7 @@ function CanvasMap() {
 
   return (
     <div>
+      <Clock grid={grid} createMapImage={createMapImage}></Clock>
       <div id="switching-model">
         <select onChange={switchModel}>
           <option value="1">Model 1</option>

@@ -1,0 +1,19 @@
+#clock {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    position: fixed;
+    top: 1px;
+    width: 100px;
+    height: 25px;
+    background-color: white;
+    left: calc(50vw - 100px);
+}
+#speed-control {
+    position: fixed;
+    top: 1px;
+    left: calc(60vw - 100px);
+}
+#speed-control button {
+    height: 25px;
+}
