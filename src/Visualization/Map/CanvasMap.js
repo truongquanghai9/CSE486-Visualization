@@ -21,6 +21,8 @@ function CanvasMap() {
   const [gridImage1, setGridImage1] = useState([]);
   var mapImageArray = [];
 
+  const [currentModel, setModel] = useState();
+
   useEffect(() => {
     let list = {};
     let tempSet = {};
@@ -198,8 +200,19 @@ function CanvasMap() {
     }
   };
 
+  const switchModel = (event) => {
+    setModel(event.target.value);
+  }
+
   return (
     <div>
+      <div id="switching-model">
+        <select onChange={switchModel}>
+          <option value="1">Model 1</option>
+          <option value="2">Model 2</option>
+          <option value="3">Model 3</option>
+        </select>
+      </div>
       <div id="zoom-in-out">
         <button onClick={zoomOut}>-</button>
         <button onClick={zoomIn}>+</button>
