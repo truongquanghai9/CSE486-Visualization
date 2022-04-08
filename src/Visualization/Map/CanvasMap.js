@@ -182,9 +182,9 @@ function CanvasMap() {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
     console.log(currWidth);
-    if (currWidth >= 2800) return false;
+    if (currWidth >= 6000) return false;
     else {
-      myImg.style.width = currWidth + 200 + 'px';
+      myImg.style.width = currWidth * 1.25 + 'px';
     }
   };
 
@@ -192,9 +192,9 @@ function CanvasMap() {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
     console.log(currWidth);
-    if (currWidth <= 400) return false;
+    if (currWidth <= 600) return false;
     else {
-      myImg.style.width = currWidth - 200 + 'px';
+      myImg.style.width = currWidth * 0.75 + 'px';
     }
   };
 
