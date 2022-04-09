@@ -7,7 +7,6 @@ import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
 import model1 from './Network/vol_predictions.json';
 import Clock from '../Clock/Clock';
-import worker from 'MapImageWorker.js';
 
 function CanvasMap() {
   const [grid, setGrid] = useState([]);
@@ -96,7 +95,11 @@ function CanvasMap() {
     // Iterate through every pixel
     for (let i = 0; i < image.data.length; i += 4) {
       let x = (i / 4) % width;
-      let y = height - 1 - parseInt(i / (width * 4));
+      // flip horizontal // let x = width - ((i / 4) % width) - 1;
+
+      let y = parseInt(i / (width * 4));
+      // flip vertical // let y = height - 1 - parseInt(i / (width * 4));
+
       let v = map[x][y];
       v = nodeToPixel(v, hour);
 
@@ -156,7 +159,7 @@ function CanvasMap() {
   const zoomIn = () => {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
-    console.log(currWidth);
+    // console.log(currWidth);
     if (currWidth >= 6000) return false;
     else {
       myImg.style.width = currWidth * 1.3 + 'px';
@@ -166,7 +169,7 @@ function CanvasMap() {
   const zoomOut = () => {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
-    console.log(currWidth);
+    // console.log(currWidth);
     if (currWidth <= 800) return false;
     else {
       myImg.style.width = currWidth * 0.7 + 'px';

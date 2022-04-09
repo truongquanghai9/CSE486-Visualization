@@ -4,7 +4,7 @@ const Clock = ({ grid, createMapImage, imageArray }) => {
   const [hour, setHour] = useState(0);
   const [minute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
-  const [speed, setSpeed] = useState(1000);
+  const [speed, setSpeed] = useState(1);
 
   useEffect(() => {
     const interval = setInterval(() => {
