@@ -7,6 +7,7 @@ import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
 import model1 from './Network/vol_predictions.json';
 import Clock from '../Clock/Clock';
+import worker from 'MapImageWorker.js';
 
 function CanvasMap() {
   const [grid, setGrid] = useState([]);
@@ -156,9 +157,9 @@ function CanvasMap() {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
     console.log(currWidth);
-    if (currWidth >= 2800) return false;
+    if (currWidth >= 6000) return false;
     else {
-      myImg.style.width = currWidth + 200 + 'px';
+      myImg.style.width = currWidth * 1.3 + 'px';
     }
   };
 
@@ -166,9 +167,9 @@ function CanvasMap() {
     var myImg = document.getElementById('image');
     var currWidth = myImg.clientWidth;
     console.log(currWidth);
-    if (currWidth <= 400) return false;
+    if (currWidth <= 800) return false;
     else {
-      myImg.style.width = currWidth - 200 + 'px';
+      myImg.style.width = currWidth * 0.7 + 'px';
     }
   };
 
