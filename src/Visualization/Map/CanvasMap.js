@@ -1,25 +1,17 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from 'react';
+import React, { useEffect, useState } from 'react';
 import { csv, sum } from 'd3';
 import nodeList from './Network/node_list.csv';
 import edgeList from './Network/edge_list.csv';
 import { Node as StreetNode } from '../Street/StreetInfo';
 import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
-import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
-// import Canvas from './Canvas';
+import Clock from '../Clock/Clock';
 
 function CanvasMap() {
   const [grid, setGrid] = useState([]);
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const [hourlyTraffic1, setHourlyTraffic1] = useState([]);
-  const [gridImage1, setGridImage1] = useState([]);
-  var mapImageArray = [];
+  const [currentModel, setModel] = useState();
+  const [imageArray, setImageArray] = useState(new Array(24));
 
   useEffect(() => {
     let list = {};
@@ -67,15 +59,12 @@ function CanvasMap() {
 
             while (true) {
               if (x0 === x1 && y0 === y1) break;
-
               e2 = 2 * err;
-
               // EITHER horizontal OR vertical step (but not both!)
               if (e2 > dy) {
                 err += dy;
                 x0 += sx;
               } else {
-                // <--- this "else" makes the difference
                 err += dx;
                 y0 += sy;
               }
@@ -84,15 +73,10 @@ function CanvasMap() {
           }
         }
 
-        document.body.appendChild(createMapImage(tempGrid, 0));
-
-        // for (let i = 0; i < 24; i++) {
-        //   let cur_img = createMapImage(tempGrid, i);
-        //   mapImageArray.push(cur_img);
-        // }
-
+        let img = createMapImage(tempGrid, 0);
+        setImageArray((arr) => (arr[0] = img));
+        document.body.appendChild(img);
         setGrid(() => tempGrid);
-        setDataLoaded(true);
       });
     });
   }, []);
@@ -104,26 +88,20 @@ function CanvasMap() {
   function createMapImage(map, hour) {
     let height = map[0].length;
     let width = map.length;
-
-    // console.log(height, width);
-
     const canvas = document.createElement('canvas');
-
     const ctx = canvas.getContext('2d');
     const image = ctx.createImageData(width, height);
 
-    // let printed = 0;
     // Iterate through every pixel
     for (let i = 0; i < image.data.length; i += 4) {
       let x = (i / 4) % width;
-      let y = height - 1 - parseInt(i / (width * 4));
+      // flip horizontal // let x = width - ((i / 4) % width) - 1;
+
+      let y = parseInt(i / (width * 4));
+      // flip vertical // let y = height - 1 - parseInt(i / (width * 4));
+
       let v = map[x][y];
       v = nodeToPixel(v, hour);
-
-      // if (printed < 10 && sum(v) > 400) {
-      //   console.log(x, y, v, hour);
-      //   printed++;
-      // }
 
       // Modify pixel data
       image.data[i + 0] = v[0]; // R value
@@ -131,12 +109,11 @@ function CanvasMap() {
       image.data[i + 2] = v[2]; // B value
       image.data[i + 3] = 255; // A value
     }
-
-    var jpgImage = imagedata_to_image(image);
-    return jpgImage;
+    console.log('Finish Image ' + hour);
+    return imagedata_to_image(image, hour);
   }
 
-  function imagedata_to_image(imagedata) {
+  function imagedata_to_image(imagedata, hour) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     canvas.width = getBoard().row;
@@ -149,6 +126,7 @@ function CanvasMap() {
     image.style.display = 'block';
     image.style.marginLeft = 'auto';
     image.style.marginRight = 'auto';
+    setImageArray((arr) => (arr[hour] = image));
     return image;
   }
 
@@ -198,8 +176,26 @@ function CanvasMap() {
     }
   };
 
+  const switchModel = (event) => {
+    setModel(event.target.value);
+  };
+
   return (
     <div>
+      <Clock
+        grid={grid}
+        createMapImage={createMapImage}
+        imageArray={imageArray}
+      />
+
+      <div id="switching-model">
+        <select onChange={switchModel}>
+          <option value="1">Model 1</option>
+          <option value="2">Model 2</option>
+          <option value="3">Model 3</option>
+        </select>
+      </div>
+
       <div id="zoom-in-out">
         <button onClick={zoomOut}>-</button>
         <button onClick={zoomIn}>+</button>
