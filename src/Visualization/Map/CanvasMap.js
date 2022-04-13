@@ -11,7 +11,6 @@ import Clock from '../Clock/Clock';
 function CanvasMap() {
   const [grid, setGrid] = useState([]);
   const [currentModel, setModel] = useState();
-  const [imageArray, setImageArray] = useState(new Array(24));
 
   useEffect(() => {
     let list = {};
@@ -72,12 +71,10 @@ function CanvasMap() {
             }
           }
         }
-
-        let img = createMapImage(tempGrid, 0);
-        setImageArray((arr) => (arr[0] = img));
-        document.body.appendChild(img);
-        setGrid(() => tempGrid);
       });
+      let img = createMapImage(tempGrid, 0);
+      document.body.appendChild(img);
+      setGrid(() => tempGrid);
     });
   }, []);
 
@@ -86,6 +83,7 @@ function CanvasMap() {
   };
 
   function createMapImage(map, hour) {
+    if (map.length < 1 || map[0].length < 1) return;
     let height = map[0].length;
     let width = map.length;
     const canvas = document.createElement('canvas');
@@ -126,7 +124,6 @@ function CanvasMap() {
     image.style.display = 'block';
     image.style.marginLeft = 'auto';
     image.style.marginRight = 'auto';
-    setImageArray((arr) => (arr[hour] = image));
     return image;
   }
 
@@ -182,11 +179,7 @@ function CanvasMap() {
 
   return (
     <div>
-      <Clock
-        grid={grid}
-        createMapImage={createMapImage}
-        imageArray={imageArray}
-      />
+      <Clock grid={grid} createMapImage={createMapImage} />
 
       <div id="switching-model">
         <select onChange={switchModel}>
@@ -200,7 +193,6 @@ function CanvasMap() {
         <button onClick={zoomOut}>-</button>
         <button onClick={zoomIn}>+</button>
       </div>
-      {/* <canvas id="canvas" width="700" height="1180"></canvas> */}
     </div>
   );
 }

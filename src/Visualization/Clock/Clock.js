@@ -1,65 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import './Clock.css';
-const Clock = ({ grid, createMapImage, imageArray }) => {
+const Clock = ({ grid, createMapImage }) => {
+  const [imageArray, setImageArray] = useState(new Array(24).fill([]));
   const [hour, setHour] = useState(0);
-  const [minute, setMinute] = useState(0);
-  const [second, setSecond] = useState(0);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(1000);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      updateSecond();
+      updateHour();
+      updateMap();
     }, speed);
     return () => {
       clearInterval(interval);
     };
-  }, [second]);
+  }, [hour]);
 
-  const updateSecond = () => {
-    if (second + 1 >= 60) {
-      setSecond(0);
-      updateMinute();
+  const updateMap = () => {
+    let img = document.getElementById('image');
+    let arr = imageArray;
+    var new_img;
+    console.log('Current Arr Len', arr.length, hour);
+    if (arr[hour].length === 0) {
+      console.log('Enter create object');
+      new_img = createMapImage(grid, hour);
+      arr[hour] = new_img;
+      setImageArray(arr);
     } else {
-      setSecond((prev) => prev + 1);
+      new_img = imageArray[hour];
     }
-  };
-
-  const updateMinute = () => {
-    if (minute + 1 >= 60) {
-      setMinute(0);
-      updateHour();
-    } else {
-      setMinute((prev) => prev + 1);
-    }
+    img.src = new_img.src;
   };
 
   const updateHour = () => {
-    const img = document.getElementById('image');
-    let nowHour = hour;
     if (hour + 1 >= 24) {
       setHour(0);
-      nowHour = 0;
     } else {
       setHour((prev) => prev + 1);
-      nowHour = hour + 1;
     }
-    if (!imageArray[nowHour]) {
-      createMapImage(grid, nowHour);
-    }
-    img.src = imageArray[nowHour].src;
   };
+
   return (
     <div>
       <div id="clock">
-        <div>{hour < 10 ? `0${hour}` : hour}</div>:
-        <div>{minute < 10 ? `0${minute}` : minute}</div>:
-        <div>{second < 10 ? `0${second}` : second}</div>
+        <div>{hour < 10 ? `0${hour}` : hour}:00</div>
       </div>
       <div id="speed-control">
-        <button onClick={() => setSpeed(1000)}>Normal</button>
+        <button onClick={() => setSpeed(1000)}>1x</button>
+        <button onClick={() => setSpeed(500)}>2x</button>
+        <button onClick={() => setSpeed(200)}>5x</button>
         <button onClick={() => setSpeed(100)}>10x</button>
-        <button onClick={() => setSpeed(10)}>100x</button>
-        <button onClick={() => setSpeed(1)}>1000x</button>
       </div>
     </div>
   );
