@@ -13,6 +13,7 @@ function CanvasMap() {
   const [currentModel, setModel] = useState();
 
   useEffect(() => {
+    console.log('Start CanvasMap UseEffect');
     let list = {};
     let tempSet = {};
     let tempGrid = [];
@@ -84,8 +85,10 @@ function CanvasMap() {
 
   function createMapImage(map, hour) {
     if (map.length < 1 || map[0].length < 1) return;
+
     let height = map[0].length;
     let width = map.length;
+
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const image = ctx.createImageData(width, height);
@@ -95,7 +98,7 @@ function CanvasMap() {
       let x = (i / 4) % width;
       // flip horizontal // let x = width - ((i / 4) % width) - 1;
 
-      let y = parseInt(i / (width * 4));
+      let y = Math.floor(i / (width * 4));
       // flip vertical // let y = height - 1 - parseInt(i / (width * 4));
 
       let v = map[x][y];
@@ -133,13 +136,12 @@ function CanvasMap() {
       convertToRGBA(arr[0]),
       convertToRGBA(arr[1]),
       convertToRGBA(arr[2]),
-      convertToRGBA(arr[3]),
     ];
   }
 
   function nodeToPixel(node, hour) {
     if (node.street.length === 0) {
-      return [0, 0, 0, 255];
+      return [0, 0, 0];
     }
     return getColorArray(model1, node.street, hour);
   }
