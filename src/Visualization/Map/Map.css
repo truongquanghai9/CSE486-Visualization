@@ -1,5 +1,6 @@
 body {
     background-color: black;
+    image-rendering: pixelated;
 }
 .board-container {
     /*border-collapse: collapse;*/

@@ -17,3 +17,18 @@
 #speed-control button {
     height: 25px;
 }
+#speed-control label {
+    color: white;
+}
+
+#scaling-control {
+    position: fixed;
+        top: 40px;
+        left: calc(60vw - 100px);
+}
+#scaling-control button {
+    height: 25px;
+}
+#scaling-control label {
+    color: white;
+}

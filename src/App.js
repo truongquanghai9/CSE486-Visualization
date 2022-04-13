@@ -12,7 +12,7 @@ import CanvasMap from './Visualization/Map/CanvasMap.js';
 // }
 
 function App() {
-  return <CanvasMap></CanvasMap>;
+  return <CanvasMap />;
 }
 
 export default App;
