@@ -1,10 +1,10 @@
 import React from 'react';
 import { Node } from '../../Street/StreetInfo';
 
-export const multFactor = [2.5, 2.5];
+// export const multFactor = 0.5;
 
-export const getBoard = () => {
-  return { row: 700 * multFactor[0], col: 1180 * multFactor[1]};
+export const getBoard = (factor) => {
+  return { row: 700 * factor, col: 1180 * factor };
 };
 
 export const initGrid = (startNode, goalNode) => {
