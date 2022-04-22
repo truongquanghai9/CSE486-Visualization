@@ -1,25 +1,19 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from 'react';
-import { csv } from 'd3';
+import React, { useEffect, useState } from 'react';
+import { csv, sum } from 'd3';
 import nodeList from './Network/node_list.csv';
 import edgeList from './Network/edge_list.csv';
 import { Node as StreetNode } from '../Street/StreetInfo';
-import { getBoard, initGrid } from './GridInit/GridInitialization';
+import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
-import Node from '../Street/Node';
 import model1 from './Network/vol_predictions.json';
+import Clock from '../Clock/Clock';
 
-const Map = () => {
+function CanvasMap() {
   const [grid, setGrid] = useState([]);
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const [hourlyTraffic1, setHourlyTraffic1] = useState([]);
-  // hour state
-  // (0, 2), (3, 5)
+  const [currentModel, setModel] = useState();
+
   useEffect(() => {
+    console.log('Start CanvasMap UseEffect');
     let list = {};
     let tempSet = {};
     let tempGrid = [];
@@ -28,8 +22,8 @@ const Map = () => {
         let xy = latlngToGlobalXY(parseFloat(d.y), parseFloat(d.x));
         let id = parseInt(d.id);
         let newNode = {
-          x: Math.ceil(470480 - xy.x),
-          y: Math.ceil(260480 - xy.y),
+          x: Math.ceil(470480 * multFactor[0] - xy.x),
+          y: Math.ceil(260480 * multFactor[1] - xy.y),
         };
         list[id] = newNode;
         if (tempSet[newNode.x] === undefined || tempSet[newNode.x] === null) {
@@ -50,8 +44,6 @@ const Map = () => {
           for (const node of tempMap[u]) {
             let v = node.v,
               street = u + '-' + node.v;
-            // tempGrid[list[u].x][list[u].y].isNode = true;
-            // tempGrid[list[v].x][list[v].y].isNode = true;
             tempGrid[list[u].x][list[u].y].street = street;
             tempGrid[list[v].x][list[v].y].street = street;
             let x0 = list[u].x,
@@ -66,16 +58,13 @@ const Map = () => {
               e2;
 
             while (true) {
-              if (x0 == x1 && y0 == y1) break;
-
+              if (x0 === x1 && y0 === y1) break;
               e2 = 2 * err;
-
               // EITHER horizontal OR vertical step (but not both!)
               if (e2 > dy) {
                 err += dy;
                 x0 += sx;
-              } else if (e2 < dx) {
-                // <--- this "else" makes the difference
+              } else {
                 err += dx;
                 y0 += sy;
               }
@@ -83,95 +72,130 @@ const Map = () => {
             }
           }
         }
-        setGrid(() => tempGrid);
-        setDataLoaded(true);
       });
+      let img = createMapImage(tempGrid, 0);
+      document.body.appendChild(img);
+      setGrid(() => tempGrid);
     });
-    const tempHourlyTraffic = new Array(24);
-    for (let i = 0; i < 24; i++) {
-      tempHourlyTraffic[i] = {};
-    }
-    for (const edge in model1) {
-      if (edge) {
-        for (let i = 0; i < 24; i++) {
-          tempHourlyTraffic[i][edge] = model1[edge].volume[i];
-        }
-      }
-    }
-    setHourlyTraffic1(tempHourlyTraffic);
   }, []);
-
-  // useEffect(() => {
-  //     if (hourlyTraffic1.length != 0) {
-  //         setColorWithHour(15);
-  //     }
-  // }, [hourlyTraffic1]);
-
-  const setColorWithHour = (hour: number) => {
-    for (const edge in hourlyTraffic1[hour]) {
-      if (edge) {
-        const allEdge: HTMLElement[] = document.getElementsByClassName(
-          edge.toString()
-        );
-        for (let i = 0; i < allEdge.length; i++) {
-          const vol = hourlyTraffic1[hour][edge];
-          allEdge[i].style.backgroundColor = `rgba(${convertToRGBA(
-            vol[0]
-          )}, ${convertToRGBA(vol[1])}, ${convertToRGBA(vol[2])}, ${vol[3]})`;
-        }
-      }
-    }
-  };
-
-  const getColor = (edge: string, hour: number) => {
-    if (edge === null || edge === undefined || edge === '')
-      return `rgba(0, 0, 0, 1)`;
-    const colors = model1[edge]['volume'][hour];
-    return `rgba(${convertToRGBA(colors[0])}, ${convertToRGBA(
-      colors[1]
-    )}, ${convertToRGBA(colors[2])}, ${colors[3]})`;
-  };
 
   const convertToRGBA = (str) => {
     return parseFloat(str) * 255;
   };
 
-  const radius = 6371;
+  function createMapImage(map, hour) {
+    if (map.length < 1 || map[0].length < 1) return;
+
+    let height = map[0].length;
+    let width = map.length;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const image = ctx.createImageData(width, height);
+
+    // Iterate through every pixel
+    for (let i = 0; i < image.data.length; i += 4) {
+      let x = (i / 4) % width;
+      // flip horizontal // let x = width - ((i / 4) % width) - 1;
+
+      let y = Math.floor(i / (width * 4));
+      // flip vertical // let y = height - 1 - parseInt(i / (width * 4));
+
+      let v = map[x][y];
+      v = nodeToPixel(v, hour);
+
+      // Modify pixel data
+      image.data[i + 0] = v[0]; // R value
+      image.data[i + 1] = v[1]; // G value
+      image.data[i + 2] = v[2]; // B value
+      image.data[i + 3] = 255; // A value
+    }
+    console.log('Finish Image ' + hour);
+    return imagedata_to_image(image, hour);
+  }
+
+  function imagedata_to_image(imagedata, hour) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = getBoard().row;
+    canvas.height = getBoard().col;
+    ctx.putImageData(imagedata, 0, 0);
+    var image = new Image();
+    image.src = canvas.toDataURL();
+    image.id = 'image';
+    image.style.zIndex = 1;
+    image.style.display = 'block';
+    image.style.marginLeft = 'auto';
+    image.style.marginRight = 'auto';
+    return image;
+  }
+
+  function getColorArray(model, street, hour) {
+    let arr = model[street]['volume'][hour];
+    return [
+      convertToRGBA(arr[0]),
+      convertToRGBA(arr[1]),
+      convertToRGBA(arr[2]),
+    ];
+  }
+
+  function nodeToPixel(node, hour) {
+    if (node.street.length === 0) {
+      return [0, 0, 0];
+    }
+    return getColorArray(model1, node.street, hour);
+  }
+
   const latlngToGlobalXY = (lat, lng) => {
-    //Calculates x based on cos of average of the latitudes
+    const radius = 6371;
+    // Calculates x based on cos of average of the latitudes
     let x = radius * lng * Math.cos(40.77235563526895);
-    //Calculates y based on latitude
+    // Calculates y based on latitude
     let y = radius * lat;
-    return { x: x, y: y };
+    return { x: x * multFactor[0], y: y * multFactor[1] };
   };
+
+  const zoomIn = () => {
+    var myImg = document.getElementById('image');
+    var currWidth = myImg.clientWidth;
+    console.log(currWidth);
+    if (currWidth >= 6000) return false;
+    else {
+      myImg.style.width = currWidth * 1.25 + 'px';
+    }
+  };
+
+  const zoomOut = () => {
+    var myImg = document.getElementById('image');
+    var currWidth = myImg.clientWidth;
+    console.log(currWidth);
+    if (currWidth <= 600) return false;
+    else {
+      myImg.style.width = currWidth * 0.75 + 'px';
+    }
+  };
+
+  const switchModel = (event) => {
+    setModel(event.target.value);
+  };
+
   return (
-    <div className="board-container">
-      <table>
-        <tbody>
-          {grid.map((row, rowIdx) => {
-            return (
-              <tr key={rowIdx}>
-                {row.map((col, colIdx) => {
-                  return (
-                    <Node
-                      key={colIdx}
-                      row={col.x}
-                      col={col.y}
-                      isStart={false}
-                      isGoal={false}
-                      street={col.street}
-                      isWall={col.street === ''}
-                      isNode={col.isNode}
-                      color={getColor(col.street, 0)}
-                    />
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div>
+      <Clock grid={grid} createMapImage={createMapImage} />
+
+      <div id="switching-model">
+        <select onChange={switchModel}>
+          <option value="1">Model 1</option>
+          <option value="2">Model 2</option>
+          <option value="3">Model 3</option>
+        </select>
+      </div>
+
+      <div id="zoom-in-out">
+        <button onClick={zoomOut}>-</button>
+        <button onClick={zoomIn}>+</button>
+      </div>
     </div>
   );
-};
-export default Map;
+}
+export default CanvasMap;
