@@ -83,6 +83,7 @@ function CanvasMap() {
     return parseFloat(str) * 255;
   };
 
+  // from the Map (model)
   function createMapImage(map, hour) {
     if (map.length < 1 || map[0].length < 1) return;
 
@@ -96,10 +97,14 @@ function CanvasMap() {
     // Iterate through every pixel
     for (let i = 0; i < image.data.length; i += 4) {
       let x = (i / 4) % width;
-      // flip horizontal // let x = width - ((i / 4) % width) - 1;
+
+      // flip horizontal
+      // let x = width - ((i / 4) % width) - 1;
 
       let y = Math.floor(i / (width * 4));
-      // flip vertical // let y = height - 1 - parseInt(i / (width * 4));
+
+      // flip vertical
+      // let y = height - 1 - Math.floor(i / (width * 4));
 
       let v = map[x][y];
       v = nodeToPixel(v, hour);
@@ -130,8 +135,10 @@ function CanvasMap() {
     return image;
   }
 
-  function getColorArray(model, street, hour) {
-    let arr = model[street]['volume'][hour];
+  // Getter function to access the RGBA colors from the model array
+  function getColorArray(street, hour) {
+    // let model = modelArr[currentModel];
+    let arr = model1[street]['volume'][hour];
     return [
       convertToRGBA(arr[0]),
       convertToRGBA(arr[1]),
@@ -139,11 +146,12 @@ function CanvasMap() {
     ];
   }
 
+  // Converter function to grab the color for a node by hour from the model
   function nodeToPixel(node, hour) {
     if (node.street.length === 0) {
       return [0, 0, 0];
     }
-    return getColorArray(model1, node.street, hour);
+    return getColorArray(node.street, hour);
   }
 
   const latlngToGlobalXY = (lat, lng) => {
@@ -161,6 +169,7 @@ function CanvasMap() {
     console.log(currWidth);
     if (currWidth >= 6000) return false;
     else {
+      // Zoom factor of 25% larger for every 'zoomin'
       myImg.style.width = currWidth * 1.25 + 'px';
     }
   };
@@ -171,6 +180,7 @@ function CanvasMap() {
     console.log(currWidth);
     if (currWidth <= 600) return false;
     else {
+      // Zoom factor of 75% smaller for every 'zoomout'
       myImg.style.width = currWidth * 0.75 + 'px';
     }
   };
