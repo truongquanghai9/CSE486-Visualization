@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Clock.css';
 const Clock = ({ grid, createMapImage, arrayIndex }) => {
   // Image array is to get the image faster without having to redo it everytime
-  const [imageArray, setImageArray] = useState(new Array(4).fill({}));
+  const [imageArray, setImageArray] = useState(new Array(4));
   const [hour, setHour] = useState(0);
   const [speed, setSpeed] = useState(1000);
 
@@ -23,7 +23,17 @@ const Clock = ({ grid, createMapImage, arrayIndex }) => {
     // get image
     console.log(imageArray);
     let img = document.getElementById('image');
-    let imgDict = imageArray[arrayIndex];
+
+    let imgDict;
+    if (
+      imageArray[arrayIndex] === null ||
+      imageArray[arrayIndex] === undefined
+    ) {
+      imgDict = {};
+    } else {
+      imgDict = imageArray[arrayIndex];
+    }
+
     let new_img;
     console.log('Current Arr, Hour:', arrayIndex, imgDict, hour);
     if (!(hour in imgDict)) {
