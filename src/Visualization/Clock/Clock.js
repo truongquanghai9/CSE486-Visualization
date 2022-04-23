@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Clock.css';
 const Clock = ({ grid, createMapImage, arrayIndex }) => {
   // Image array is to get the image faster without having to redo it everytime
-  const [imageArray, setImageArray] = useState(
-    new Array(4).fill(new Array(24).fill([null]))
-  );
+  const [imageArray, setImageArray] = useState(new Array(4).fill({}));
   const [hour, setHour] = useState(0);
   const [speed, setSpeed] = useState(1000);
 
@@ -23,20 +21,23 @@ const Clock = ({ grid, createMapImage, arrayIndex }) => {
   // Update the map when the hour change
   const updateMap = () => {
     // get image
+    console.log(imageArray);
     let img = document.getElementById('image');
-    let arr = imageArray[arrayIndex];
-    var new_img;
-    console.log('Current Arr Len', arr.length, hour);
-    if (arr[hour] === null) {
-      console.log('Enter create object');
+    let imgDict = imageArray[arrayIndex];
+    let new_img;
+    console.log('Current Arr, Hour:', arrayIndex, imgDict, hour);
+    if (!(hour in imgDict)) {
+      console.log('Create object & Insert to Dict');
+
       // create new image
       new_img = createMapImage(grid, hour);
 
-      // setting new image to image array
-      arr[hour] = new_img;
-      setImageArray(arr);
+      // setting new image to image dict
+      imgDict[hour] = new_img;
+      imageArray[arrayIndex] = imgDict;
+      setImageArray(imageArray);
     } else {
-      new_img = imageArray[hour];
+      new_img = imgDict[hour];
     }
 
     // setting image to new image and display on screen

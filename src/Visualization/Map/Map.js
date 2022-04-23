@@ -4,11 +4,12 @@ import nodeList from './Network/node_list.csv';
 import edgeList from './Network/edge_list.csv';
 import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
-import 'semantic-ui-css/semantic.min.css';
-import model1 from './Network/DecisionTree.json';
-// import model2 from './Network/KNearestNeighbors.json';
-// import model3 from './Network/NeuralNetwork.json';
-// import model4 from './Network/RandomForest.json';
+// import 'semantic-ui-css/semantic.min.css';
+import model1 from './Network/vol_predictions.json';
+// import model1 from './Network/DecisionTree.json';
+import model2 from './Network/KNearestNeighbors.json';
+import model3 from './Network/NeuralNetwork.json';
+import model4 from './Network/RandomForest.json';
 import Clock from '../Clock/Clock';
 
 function CanvasMap() {
@@ -16,7 +17,7 @@ function CanvasMap() {
   const [grid, setGrid] = useState([]);
 
   // this is used to set different models based on the dropdown selection
-  const [currentModel, setModel] = useState();
+  const [currentModel, setModel] = useState(1);
 
   // will be ran 1 time right after the application is rendered
   useEffect(() => {
@@ -103,6 +104,7 @@ function CanvasMap() {
 
       // create the map with the grid
       let img = createMapImage(tempGrid, 0);
+      console.log('Do useEffect');
 
       // append the image onto the screen
       document.body.appendChild(img);
@@ -117,6 +119,7 @@ function CanvasMap() {
 
   // from the Map (model)
   function createMapImage(map, hour) {
+    console.log('Create Map Image: ', hour);
     if (map.length < 1 || map[0].length < 1) return;
 
     let height = map[0].length;
@@ -186,20 +189,6 @@ function CanvasMap() {
         return model3;
       case 4:
         return model4;
-    }
-    return model1;
-  }
-
-  function getModel() {
-    switch (currentModel) {
-      case 1:
-        return model1;
-      // case 2:
-      //   return model2;
-      // case 3:
-      //   return model3;
-      // case 4:
-      //   return model4;
       default:
         return model1;
     }
