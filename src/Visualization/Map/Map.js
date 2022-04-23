@@ -5,8 +5,8 @@ import edgeList from './Network/edge_list.csv';
 import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
 // import 'semantic-ui-css/semantic.min.css';
-import model1 from './Network/vol_predictions.json';
-// import model1 from './Network/DecisionTree.json';
+// import model1 from './Network/vol_predictions.json';
+import model1 from './Network/DecisionTree.json';
 import model2 from './Network/KNearestNeighbors.json';
 import model3 from './Network/NeuralNetwork.json';
 import model4 from './Network/RandomForest.json';
@@ -181,13 +181,13 @@ function CanvasMap() {
 
   function getModel() {
     switch (currentModel) {
-      case 1:
+      case '1':
         return model1;
-      case 2:
+      case '2':
         return model2;
-      case 3:
+      case '3':
         return model3;
-      case 4:
+      case '4':
         return model4;
       default:
         return model1;
