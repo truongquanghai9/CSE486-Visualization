@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import './Clock.css';
-const Clock = ({ grid, createMapImage }) => {
-
+const Clock = ({ grid, createMapImage, arrayIndex }) => {
   // Image array is to get the image faster without having to redo it everytime
-  const [imageArray, setImageArray] = useState(new Array(24).fill([]));
+  const [imageArray, setImageArray] = useState(
+    new Array(4).fill(new Array(24).fill([null]))
+  );
   const [hour, setHour] = useState(0);
   const [speed, setSpeed] = useState(1000);
 
   // Run at first, and everytime the hour change
   useEffect(() => {
-
     //Interval to update the hour within the speed rate
     const interval = setInterval(() => {
       updateHour();
@@ -24,10 +24,10 @@ const Clock = ({ grid, createMapImage }) => {
   const updateMap = () => {
     // get image
     let img = document.getElementById('image');
-    let arr = imageArray;
+    let arr = imageArray[arrayIndex];
     var new_img;
     console.log('Current Arr Len', arr.length, hour);
-    if (arr[hour].length === 0) {
+    if (arr[hour] === null) {
       console.log('Enter create object');
       // create new image
       new_img = createMapImage(grid, hour);

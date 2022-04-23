@@ -32,3 +32,13 @@ button {
     height: 25px;
     margin-left: 5px;
 }
+
+#box {
+    position: fixed;
+    bottom: 0;
+    right: 120px;
+    transform: rotate(-90deg);
+    width: 20px;
+    height: 200px;
+    background: linear-gradient(green 0%, yellow 50%, red 100%);
+}

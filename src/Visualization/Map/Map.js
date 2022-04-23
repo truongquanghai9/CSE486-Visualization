@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { csv } from 'd3';
 import nodeList from './Network/node_list.csv';
 import edgeList from './Network/edge_list.csv';
-import { Node as StreetNode } from '../Street/StreetInfo';
 import { getBoard, initGrid, multFactor } from './GridInit/GridInitialization';
 import './Map.css';
-import model1 from './Network/vol_predictions.json';
+import 'semantic-ui-css/semantic.min.css';
+import model1 from './Network/DecisionTree.json';
+// import model2 from './Network/KNearestNeighbors.json';
+// import model3 from './Network/NeuralNetwork.json';
+// import model4 from './Network/RandomForest.json';
 import Clock from '../Clock/Clock';
 
 function CanvasMap() {
-
   // State for actual grid (which will be used for making images)
   const [grid, setGrid] = useState([]);
 
@@ -18,7 +20,6 @@ function CanvasMap() {
 
   // will be ran 1 time right after the application is rendered
   useEffect(() => {
-
     // The list is an object with this format:
     // { nodeID: {x: x, y: y}, ...}
     let list = {};
@@ -31,7 +32,6 @@ function CanvasMap() {
     csv(nodeList).then((data) => {
       // Reading each node
       data.forEach((d) => {
-
         // Using latitude and longitude to convert to the actual x and y cordinate on the grid.
         let xy = latlngToGlobalXY(parseFloat(d.y), parseFloat(d.x));
 
@@ -40,8 +40,8 @@ function CanvasMap() {
 
         // Creating a new node with x and y from the previous results
         let newNode = {
-          x: Math.ceil(470480 * multFactor[0] - xy.x),
-          y: Math.ceil(260480 * multFactor[1] - xy.y),
+          x: Math.ceil(470480 * multFactor - xy.x),
+          y: Math.ceil(260480 * multFactor - xy.y),
         };
 
         // Put this new node as value for the node id
@@ -64,7 +64,7 @@ function CanvasMap() {
           }
           tempMap[parseInt(d.u)].push({ v: parseInt(d.v), street: d.name });
         });
-        
+
         // Loop through the adjacency list and modify the x and y on each node to make each pixels look smoothly
         for (let u in tempMap) {
           for (const node of tempMap[u]) {
@@ -129,14 +129,10 @@ function CanvasMap() {
     // Iterate through every pixel
     for (let i = 0; i < image.data.length; i += 4) {
       let x = (i / 4) % width;
-
-      // flip horizontal
-      // let x = width - ((i / 4) % width) - 1;
+      // flip horizontal // let x = width - ((i / 4) % width) - 1;
 
       let y = Math.floor(i / (width * 4));
-
-      // flip vertical
-      // let y = height - 1 - Math.floor(i / (width * 4));
+      // flip vertical // let y = height - 1 - Math.floor(i / (width * 4));
 
       let v = map[x][y];
       v = nodeToPixel(v, hour);
@@ -151,6 +147,7 @@ function CanvasMap() {
     return imagedata_to_image(image, hour);
   }
 
+  // turn image (ImageData) into actual image using canvas
   function imagedata_to_image(imagedata, hour) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -170,12 +167,42 @@ function CanvasMap() {
   // Getter function to access the RGBA colors from the model array
   function getColorArray(street, hour) {
     // let model = modelArr[currentModel];
-    let arr = model1[street]['volume'][hour];
+    let model = getModel();
+    let arr = model[street]['volume'][hour];
     return [
       convertToRGBA(arr[0]),
       convertToRGBA(arr[1]),
       convertToRGBA(arr[2]),
     ];
+  }
+
+  function getModel() {
+    switch (currentModel) {
+      case 1:
+        return model1;
+      case 2:
+        return model2;
+      case 3:
+        return model3;
+      case 4:
+        return model4;
+    }
+    return model1;
+  }
+
+  function getModel() {
+    switch (currentModel) {
+      case 1:
+        return model1;
+      // case 2:
+      //   return model2;
+      // case 3:
+      //   return model3;
+      // case 4:
+      //   return model4;
+      default:
+        return model1;
+    }
   }
 
   // Converter function to grab the color for a node by hour from the model
@@ -186,7 +213,6 @@ function CanvasMap() {
     return getColorArray(node.street, hour);
   }
 
-  
   // Function to convert longitude and latitude to x and y
   const latlngToGlobalXY = (lat, lng) => {
     const radius = 6371;
@@ -194,7 +220,7 @@ function CanvasMap() {
     let x = radius * lng * Math.cos(40.77235563526895);
     // Calculates y based on latitude
     let y = radius * lat;
-    return { x: x * multFactor[0], y: y * multFactor[1] };
+    return { x: x * multFactor, y: y * multFactor };
   };
 
   // Function to zoom in the image
@@ -238,13 +264,18 @@ function CanvasMap() {
 
   return (
     <div>
-      <Clock grid={grid} createMapImage={createMapImage} />
+      <Clock
+        grid={grid}
+        createMapImage={createMapImage}
+        arrayIndex={parseInt(currentModel)}
+      />
 
       <div id="switching-model">
         <select onChange={switchModel}>
-          <option value="1">Model 1</option>
-          <option value="2">Model 2</option>
-          <option value="3">Model 3</option>
+          <option value="1">Decision Tree</option>
+          <option value="2">K Nearest Neighbors</option>
+          <option value="3">Neural Network</option>
+          <option value="4">Random Forest</option>
         </select>
       </div>
 
@@ -252,6 +283,8 @@ function CanvasMap() {
         <button onClick={zoomOut}>-</button>
         <button onClick={zoomIn}>+</button>
       </div>
+
+      <div id="box"></div>
     </div>
   );
 }
