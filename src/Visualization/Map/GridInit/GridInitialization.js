@@ -1,7 +1,7 @@
 import React from 'react';
 import { Node } from '../../Street/StreetInfo';
 
-export const multFactor = 0.5;
+export const multFactor = 2;
 
 export const getBoard = () => {
   return { row: 700 * multFactor, col: 1180 * multFactor };
