@@ -10,6 +10,7 @@ import model1 from './Network/DecisionTree.json';
 import model2 from './Network/KNearestNeighbors.json';
 import model3 from './Network/NeuralNetwork.json';
 import model4 from './Network/RandomForest.json';
+import { newNode } from './GridInit/GridInitialization';
 import Clock from '../Clock/Clock';
 
 function CanvasMap() {
@@ -71,6 +72,8 @@ function CanvasMap() {
           for (const node of tempMap[u]) {
             let v = node.v,
               street = u + '-' + node.v;
+            tempGrid[list[u].x][list[u].y] = newNode(list[u].x, list[u].y);
+            tempGrid[list[v].x][list[v].y] = newNode(list[v].x, list[v].y);
             tempGrid[list[u].x][list[u].y].street = street;
             tempGrid[list[v].x][list[v].y].street = street;
             let x0 = list[u].x,
@@ -95,7 +98,7 @@ function CanvasMap() {
                 err += dx;
                 y0 += sy;
               }
-
+              tempGrid[x0][y0] = newNode(x0, y0);
               tempGrid[x0][y0].street = street;
             }
           }
@@ -118,12 +121,12 @@ function CanvasMap() {
   };
 
   // from the Map (model)
-  function createMapImage(map, hour) {
+  function createMapImage(grid, hour) {
     console.log('Create Map Image: ', hour);
-    if (map.length < 1 || map[0].length < 1) return;
+    if (grid.length < 1 || grid[0].length < 1) return;
 
-    let height = map[0].length;
-    let width = map.length;
+    let height = grid[0].length;
+    let width = grid.length;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -137,8 +140,12 @@ function CanvasMap() {
       let y = Math.floor(i / (width * 4));
       // flip vertical // let y = height - 1 - Math.floor(i / (width * 4));
 
-      let v = map[x][y];
-      v = nodeToPixel(v, hour);
+      let v = grid[x][y];
+      if (grid[x][y] === undefined || grid[x][y] === null) {
+        v = [0, 0, 0];
+      } else {
+        v = nodeToPixel(v, hour);
+      }
 
       // Modify pixel data
       image.data[i + 0] = v[0]; // R value
